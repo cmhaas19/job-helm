@@ -17,7 +17,6 @@ import {
   LogOut,
   Menu,
   X,
-  Shield,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
@@ -27,16 +26,17 @@ interface SidebarProps {
   userEmail: string;
 }
 
-const memberLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+const overviewLinks = [
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/dashboard/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/dashboard/searches", label: "Searches", icon: Search },
-  { href: "/dashboard/resume", label: "Resume", icon: FileText },
-  { href: "/dashboard/history", label: "Run History", icon: History },
 ];
 
-const adminLinks = [
-  { href: "/admin", label: "Admin Overview", icon: Shield },
+const setupLinks = [
+  { href: "/dashboard/searches", label: "Searches", icon: Search },
+  { href: "/dashboard/resume", label: "Resume", icon: FileText },
+];
+
+const systemLinks = [
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/prompts", label: "Prompts", icon: ScrollText },
   { href: "/admin/run-logs", label: "Run Logs", icon: History },
@@ -82,12 +82,13 @@ export function Sidebar({ userRole, userEmail }: SidebarProps) {
         <span className="text-lg font-bold">Job Helm</span>
       </div>
 
-      {/* Member nav */}
+      {/* Navigation */}
       <nav className="flex-1 space-y-1 mt-6">
+        {/* Overview */}
         <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Dashboard
+          Overview
         </p>
-        {memberLinks.map((link) => {
+        {overviewLinks.map((link) => {
           const isActive =
             link.href === "/dashboard"
               ? pathname === "/dashboard"
@@ -110,19 +111,42 @@ export function Sidebar({ userRole, userEmail }: SidebarProps) {
           );
         })}
 
-        {/* Admin nav */}
+        {/* Setup */}
+        <div className="pt-4">
+          <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+            Setup
+          </p>
+        </div>
+        {setupLinks.map((link) => {
+          const isActive = pathname.startsWith(link.href);
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={() => setMobileOpen(false)}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <link.icon className="h-4 w-4" />
+              {link.label}
+            </Link>
+          );
+        })}
+
+        {/* System (admin only) */}
         {userRole === "admin" && (
           <>
             <div className="pt-4">
               <p className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                Admin
+                System
               </p>
             </div>
-            {adminLinks.map((link) => {
-              const isActive =
-                link.href === "/admin"
-                  ? pathname === "/admin"
-                  : pathname.startsWith(link.href);
+            {systemLinks.map((link) => {
+              const isActive = pathname.startsWith(link.href);
               return (
                 <Link
                   key={link.href}

@@ -35,36 +35,28 @@ const EXPERIENCE_LEVELS = [
   "executive",
 ];
 
+function buildFormDefaults(data?: SearchFormData | null) {
+  return {
+    name: data?.name ?? "",
+    keyword: data?.keyword ?? "",
+    location: data?.location ?? "",
+    date_since_posted: data?.date_since_posted ?? "past week",
+    job_type: data?.job_type ?? "",
+    remote_filter: data?.remote_filter ?? "",
+    experience_level: data?.experience_level ?? [],
+    result_limit: data?.result_limit ?? 100,
+    sort_by: data?.sort_by ?? "relevant",
+    is_active: data?.is_active !== false,
+  };
+}
+
 export function SearchForm({ initialData, onSave, onCancel }: SearchFormProps) {
   const isEditing = !!initialData?.id;
 
-  const [form, setForm] = useState({
-    name: initialData?.name ?? "",
-    keyword: initialData?.keyword ?? "",
-    location: initialData?.location ?? "",
-    date_since_posted: initialData?.date_since_posted ?? "past week",
-    job_type: initialData?.job_type ?? "",
-    remote_filter: initialData?.remote_filter ?? "",
-    experience_level: initialData?.experience_level ?? [],
-    result_limit: initialData?.result_limit ?? 100,
-    sort_by: initialData?.sort_by ?? "relevant",
-    is_active: initialData?.is_active !== false,
-  });
+  const [form, setForm] = useState(buildFormDefaults(initialData));
 
-  // Reset form when initialData changes (switching between create/edit)
   useEffect(() => {
-    setForm({
-      name: initialData?.name ?? "",
-      keyword: initialData?.keyword ?? "",
-      location: initialData?.location ?? "",
-      date_since_posted: initialData?.date_since_posted ?? "past week",
-      job_type: initialData?.job_type ?? "",
-      remote_filter: initialData?.remote_filter ?? "",
-      experience_level: initialData?.experience_level ?? [],
-      result_limit: initialData?.result_limit ?? 100,
-      sort_by: initialData?.sort_by ?? "relevant",
-      is_active: initialData?.is_active !== false,
-    });
+    setForm(buildFormDefaults(initialData));
     setError("");
   }, [initialData]);
 

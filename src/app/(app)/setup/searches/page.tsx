@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { SearchForm, type SearchFormData } from "@/components/search-form";
+import { readSSEStream } from "@/lib/sse";
 import {
   Search,
   Plus,
@@ -112,45 +113,13 @@ export default function SearchesPage() {
         return;
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) {
-        setRunError("No response stream");
-        setRunStatus("error");
-        return;
-      }
+      const status = await readSSEStream(res, {
+        onLog: (msg) => setRunLogs((prev) => [...prev, msg]),
+        onComplete: (event) => { setRunStats(event.stats); setRunStatus("completed"); },
+        onError: (msg) => { setRunError(msg); setRunStatus("error"); },
+      });
 
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const event = JSON.parse(line.slice(6));
-              if (event.type === "log") {
-                setRunLogs((prev) => [...prev, event.message]);
-              } else if (event.type === "complete") {
-                setRunStats(event.stats);
-                setRunStatus("completed");
-              } else if (event.type === "error") {
-                setRunError(event.message);
-                setRunStatus("error");
-              }
-            } catch {
-              // ignore
-            }
-          }
-        }
-      }
-
-      if (runStatus === "running") setRunStatus("completed");
+      setRunStatus(status);
     } catch (err: any) {
       setRunError(err.message);
       setRunStatus("error");

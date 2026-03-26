@@ -5,6 +5,7 @@ import Link from "next/link";
 import { JobDetailPanel } from "@/components/job-detail-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FIT_COLORS, formatDuration, formatShortDate, timeAgo } from "@/lib/constants";
 import {
   LayoutDashboard,
   Clock,
@@ -47,31 +48,6 @@ interface DashboardData {
   weekTotal: number;
   fitCounts: Record<string, number>;
   topJobs: TopJob[];
-}
-
-const FIT_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  "STRONG FIT": { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  "GOOD FIT": { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
-  BORDERLINE: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
-  "WEAK FIT": { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
-};
-
-function formatDuration(ms: number | null) {
-  if (!ms) return "";
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${(ms / 60000).toFixed(1)}m`;
-}
-
-function timeAgo(dateStr: string) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 export default function DashboardHomePage() {
@@ -292,14 +268,7 @@ export default function DashboardHomePage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {job.date_posted
-                          ? new Date(job.date_posted).toLocaleString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })
-                          : "—"}
+                        {formatShortDate(job.date_posted)}
                       </span>
                     </td>
                   </tr>

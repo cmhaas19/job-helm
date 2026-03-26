@@ -36,7 +36,6 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   const publicRoutes = ["/login", "/register", "/forgot-password"];
-  const authRoutes = ["/", "/jobs", "/setup", "/admin"];
 
   // Public routes — redirect to home if already logged in
   if (publicRoutes.includes(path)) {
@@ -53,10 +52,16 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Protected routes — require auth
-  const isProtected = authRoutes.some(
-    (route) => path === route || path.startsWith(route + "/")
-  );
+  // API routes — pass through (auth handled per-route)
+  if (path.startsWith("/api/")) {
+    return supabaseResponse;
+  }
+
+  // All other non-public routes require auth
+  const isProtected = path === "/" ||
+    path.startsWith("/jobs") ||
+    path.startsWith("/setup") ||
+    path.startsWith("/admin");
 
   if (isProtected) {
     if (!user) {

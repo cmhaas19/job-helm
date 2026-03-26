@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("job_evaluations")
-    .select("*", { count: "exact" })
+    .select("id, position, company, location, salary, fit_category, total_score, ago_time, date_posted, user_rating, search_query, job_url, company_logo, skipped, created_at, prompt_version", { count: "exact" })
     .eq("user_id", user.id);
 
   // Default: hide skipped

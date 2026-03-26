@@ -3,7 +3,7 @@ import { buildLinkedInSearchUrl } from "./url-builder";
 import { parseSearchResults, fetchPage, fetchJobDescription, type JobCard } from "./parser";
 import { parseTopSalary } from "./salary";
 import { evaluateJob } from "@/lib/evaluator";
-import { getConfigArray, getConfigNumber } from "@/lib/config";
+import { getAllConfig } from "@/lib/config";
 
 interface PipelineStats {
   phase: string;
@@ -113,11 +113,12 @@ export async function runPipeline(
 
     log(`Loaded ${searches.length} search(es)`);
 
-    // Load config
-    const blockedPublishers = await getConfigArray("blocked_publishers");
-    const minCompTopEnd = await getConfigNumber("min_comp_top_end");
-    const delayMs = (await getConfigNumber("delay_between_fetches_ms")) ?? 1500;
-    const evalConcurrency = (await getConfigNumber("eval_concurrency")) ?? 5;
+    // Load all config in one query
+    const config = await getAllConfig();
+    const blockedPublishers = Array.isArray(config.blocked_publishers) ? config.blocked_publishers as string[] : [];
+    const minCompTopEnd = config.min_comp_top_end != null ? Number(config.min_comp_top_end) : null;
+    const delayMs = Number(config.delay_between_fetches_ms) || 1500;
+    const evalConcurrency = Number(config.eval_concurrency) || 5;
 
     log(`Config: blockedPublishers=${blockedPublishers.length}, minComp=$${minCompTopEnd}, delay=${delayMs}ms, concurrency=${evalConcurrency}`);
 

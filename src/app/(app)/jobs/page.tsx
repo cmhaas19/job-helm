@@ -7,12 +7,15 @@ import { JobDetailPanel } from "@/components/job-detail-panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
+import { SortableHeader } from "@/components/ui/sortable-header";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FIT_COLORS, formatShortDate } from "@/lib/constants";
+import { readSSEStream } from "@/lib/sse";
 import {
   LayoutDashboard,
   Search,
@@ -20,9 +23,6 @@ import {
   ChevronLeft,
   ChevronRight,
   SlidersHorizontal,
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
   RefreshCw,
   Loader2,
   CheckCircle2,
@@ -63,38 +63,6 @@ function StarRating({ rating }: { rating: number | null }) {
         />
       ))}
     </div>
-  );
-}
-
-interface SortableHeaderProps {
-  label: string;
-  field: string;
-  currentSort: string;
-  currentOrder: string;
-  onSort: (field: string) => void;
-  className?: string;
-}
-
-function SortableHeader({ label, field, currentSort, currentOrder, onSort, className }: SortableHeaderProps) {
-  const isActive = currentSort === field;
-  return (
-    <th
-      className={`px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground group ${className || ""}`}
-      onClick={() => onSort(field)}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {isActive ? (
-          currentOrder === "asc" ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50" />
-        )}
-      </span>
-    </th>
   );
 }
 
@@ -239,42 +207,13 @@ export default function JobsPage() {
         return;
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) {
-        setReEvalStatus("error");
-        return;
-      }
+      const status = await readSSEStream(res, {
+        onLog: (msg) => setReEvalLogs((prev) => [...prev, msg]),
+        onComplete: () => setReEvalStatus("completed"),
+        onError: (msg) => { setReEvalLogs((prev) => [...prev, msg]); setReEvalStatus("error"); },
+      });
 
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            try {
-              const event = JSON.parse(line.slice(6));
-              if (event.type === "log") {
-                setReEvalLogs((prev) => [...prev, event.message]);
-              } else if (event.type === "complete") {
-                setReEvalStatus("completed");
-              } else if (event.type === "error") {
-                setReEvalStatus("error");
-              }
-            } catch {
-              // ignore
-            }
-          }
-        }
-      }
-
-      if (reEvalStatus === "running") setReEvalStatus("completed");
+      setReEvalStatus(status);
     } catch (err: any) {
       setReEvalLogs((prev) => [...prev, `Error: ${err.message}`]);
       setReEvalStatus("error");
@@ -511,14 +450,8 @@ export default function JobsPage() {
                       {job.total_score !== null ? (
                         <span
                           className={`inline-flex items-center justify-center h-8 w-8 rounded-full text-sm font-bold ${
-                            job.fit_category === "STRONG FIT"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : job.fit_category === "GOOD FIT"
-                              ? "bg-blue-100 text-blue-700"
-                              : job.fit_category === "BORDERLINE"
-                              ? "bg-amber-100 text-amber-700"
-                              : job.fit_category === "WEAK FIT"
-                              ? "bg-red-100 text-red-700"
+                            FIT_COLORS[job.fit_category || ""]
+                              ? `${FIT_COLORS[job.fit_category!].bg} ${FIT_COLORS[job.fit_category!].text}`
                               : "bg-muted text-muted-foreground"
                           }`}
                           title={job.fit_category || undefined}
@@ -563,14 +496,7 @@ export default function JobsPage() {
                     {/* Posted */}
                     <td className="px-3 py-2.5">
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {job.date_posted
-                          ? new Date(job.date_posted).toLocaleString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })
-                          : "—"}
+                        {formatShortDate(job.date_posted)}
                       </span>
                     </td>
 

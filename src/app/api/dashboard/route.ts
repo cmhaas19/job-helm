@@ -15,22 +15,34 @@ export async function GET() {
   const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Last run
-  const { data: lastRun } = await supabase
-    .from("run_logs")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .single();
+  const [lastRunRes, weekJobsRes, topJobsRes] = await Promise.all([
+    supabase
+      .from("run_logs")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .single(),
+    supabase
+      .from("job_evaluations")
+      .select("fit_category")
+      .eq("user_id", user.id)
+      .eq("skipped", false)
+      .gte("created_at", oneWeekAgo),
+    supabase
+      .from("job_evaluations")
+      .select("id, position, company, location, total_score, fit_category, date_posted, company_logo, search_query, prompt_version")
+      .eq("user_id", user.id)
+      .eq("skipped", false)
+      .eq("fit_category", "STRONG FIT")
+      .gte("created_at", thirtyDaysAgo)
+      .order("date_posted", { ascending: false })
+      .limit(10),
+  ]);
 
-  // Jobs found in the past week by fit category
-  const { data: weekJobs } = await supabase
-    .from("job_evaluations")
-    .select("fit_category")
-    .eq("user_id", user.id)
-    .eq("skipped", false)
-    .gte("created_at", oneWeekAgo);
+  const lastRun = lastRunRes.data;
+  const weekJobs = weekJobsRes.data;
+  const topJobs = topJobsRes.data;
 
   const fitCounts: Record<string, number> = {
     "STRONG FIT": 0,
@@ -49,17 +61,6 @@ export async function GET() {
   }
 
   const weekTotal = (weekJobs || []).length;
-
-  // Top strong fit jobs in last 30 days
-  const { data: topJobs } = await supabase
-    .from("job_evaluations")
-    .select("id, position, company, location, total_score, fit_category, date_posted, company_logo, search_query, prompt_version")
-    .eq("user_id", user.id)
-    .eq("skipped", false)
-    .eq("fit_category", "STRONG FIT")
-    .gte("created_at", thirtyDaysAgo)
-    .order("date_posted", { ascending: false })
-    .limit(10);
 
   return NextResponse.json({
     lastRun,

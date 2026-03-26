@@ -4,12 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Users,
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
-} from "lucide-react";
+import { SortableHeader } from "@/components/ui/sortable-header";
+import { Users } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -18,38 +14,6 @@ interface Profile {
   role: string;
   resume_text: string | null;
   created_at: string;
-}
-
-interface SortableHeaderProps {
-  label: string;
-  field: string;
-  currentSort: string;
-  currentOrder: string;
-  onSort: (field: string) => void;
-  className?: string;
-}
-
-function SortableHeader({ label, field, currentSort, currentOrder, onSort, className }: SortableHeaderProps) {
-  const isActive = currentSort === field;
-  return (
-    <th
-      className={`px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground group ${className || ""}`}
-      onClick={() => onSort(field)}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {isActive ? (
-          currentOrder === "asc" ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50" />
-        )}
-      </span>
-    </th>
-  );
 }
 
 export default function AdminUsersPage() {

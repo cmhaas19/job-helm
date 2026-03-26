@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { SortableHeader } from "@/components/ui/sortable-header";
+import { formatDuration, formatShortDate } from "@/lib/constants";
 import {
   History,
   CheckCircle2,
@@ -11,9 +13,6 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  ArrowUp,
-  ArrowDown,
-  ArrowUpDown,
 } from "lucide-react";
 
 interface RunLog {
@@ -27,38 +26,6 @@ interface RunLog {
   stats: any;
   error: string | null;
   profiles: { email: string };
-}
-
-interface SortableHeaderProps {
-  label: string;
-  field: string;
-  currentSort: string;
-  currentOrder: string;
-  onSort: (field: string) => void;
-  className?: string;
-}
-
-function SortableHeader({ label, field, currentSort, currentOrder, onSort, className }: SortableHeaderProps) {
-  const isActive = currentSort === field;
-  return (
-    <th
-      className={`px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground group ${className || ""}`}
-      onClick={() => onSort(field)}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {isActive ? (
-          currentOrder === "asc" ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3 w-3 opacity-0 group-hover:opacity-50" />
-        )}
-      </span>
-    </th>
-  );
 }
 
 function StatusIcon({ status }: { status: string }) {
@@ -118,13 +85,6 @@ export default function AdminRunLogsPage() {
     if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
     return 0;
   });
-
-  function formatDuration(ms: number | null) {
-    if (!ms) return "—";
-    if (ms < 1000) return `${ms}ms`;
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-    return `${(ms / 60000).toFixed(1)}m`;
-  }
 
   const startRow = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const endRow = Math.min(page * PAGE_SIZE, total);
@@ -216,12 +176,7 @@ export default function AdminRunLogsPage() {
                     </td>
                     <td className="px-3 py-2.5">
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(log.started_at).toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
+                        {formatShortDate(log.started_at)}
                       </span>
                     </td>
                     <td className="px-3 py-2.5">

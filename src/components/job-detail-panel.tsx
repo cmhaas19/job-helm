@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { FIT_COLORS, FIT_SCORE_COLORS, SCORE_LABELS, formatShortDate } from "@/lib/constants";
 import {
   Building2,
   MapPin,
@@ -42,28 +43,6 @@ interface JobDetail {
   skip_reason: string | null;
 }
 
-const FIT_COLORS: Record<string, string> = {
-  "STRONG FIT": "bg-emerald-100 text-emerald-700 border-emerald-200",
-  "GOOD FIT": "bg-blue-100 text-blue-700 border-blue-200",
-  BORDERLINE: "bg-amber-100 text-amber-700 border-amber-200",
-  "WEAK FIT": "bg-red-100 text-red-700 border-red-200",
-};
-
-const SCORE_LABELS: Record<string, { label: string; max: number }> = {
-  required_skills: { label: "Required Skills", max: 35 },
-  years_of_experience: { label: "Experience", max: 10 },
-  role_level_alignment: { label: "Role Level", max: 20 },
-  industry_domain_match: { label: "Industry Match", max: 20 },
-  nice_to_have_skills: { label: "Nice-to-Have", max: 10 },
-  education_certs: { label: "Education", max: 5 },
-};
-
-const SCORE_BAR_COLORS: Record<string, string> = {
-  "STRONG FIT": "bg-emerald-500",
-  "GOOD FIT": "bg-blue-500",
-  BORDERLINE: "bg-amber-500",
-  "WEAK FIT": "bg-red-500",
-};
 
 interface JobDetailPanelProps {
   jobId: string | null;
@@ -121,7 +100,7 @@ export function JobDetailPanel({ jobId, onClose }: JobDetailPanelProps) {
   }
 
   const isOpen = !!jobId;
-  const barColor = SCORE_BAR_COLORS[job?.fit_category || ""] || "bg-primary";
+  const barColor = FIT_SCORE_COLORS[job?.fit_category || ""] || "bg-primary";
 
   return (
     <>
@@ -197,12 +176,7 @@ export function JobDetailPanel({ jobId, onClose }: JobDetailPanelProps) {
                     {job.date_posted && (
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {new Date(job.date_posted).toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
+                        {formatShortDate(job.date_posted)}
                       </span>
                     )}
                     {job.search_query && (
@@ -217,7 +191,11 @@ export function JobDetailPanel({ jobId, onClose }: JobDetailPanelProps) {
 
                   {/* Score + Fit */}
                   {job.total_score !== null && (
-                    <div className={`rounded-lg border p-4 ${FIT_COLORS[job.fit_category || ""] || "bg-muted"}`}>
+                    <div className={`rounded-lg border p-4 ${
+                      FIT_COLORS[job.fit_category || ""]
+                        ? `${FIT_COLORS[job.fit_category!].bg} ${FIT_COLORS[job.fit_category!].text} ${FIT_COLORS[job.fit_category!].border}`
+                        : "bg-muted"
+                    }`}>
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-baseline gap-2">
                           <span className="text-3xl font-bold">

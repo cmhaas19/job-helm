@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import {
+  Briefcase,
   Compass,
   LayoutDashboard,
   Search,
@@ -27,7 +28,8 @@ interface SidebarProps {
 }
 
 const memberLinks = [
-  { href: "/dashboard", label: "Jobs", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/jobs", label: "Jobs", icon: Briefcase },
   { href: "/dashboard/searches", label: "Searches", icon: Search },
   { href: "/dashboard/resume", label: "Resume", icon: FileText },
   { href: "/dashboard/history", label: "Run History", icon: History },

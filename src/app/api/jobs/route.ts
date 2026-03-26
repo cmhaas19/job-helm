@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   const location = url.searchParams.get("location");
   const searchQuery = url.searchParams.get("searchQuery");
   const promptVersion = url.searchParams.get("promptVersion");
+  const fitCategory = url.searchParams.get("fitCategory");
   const postedWithin = url.searchParams.get("postedWithin");
   const skipped = url.searchParams.get("skipped");
   const sortBy = url.searchParams.get("sortBy") || "total_score";
@@ -46,6 +47,10 @@ export async function GET(request: NextRequest) {
 
   if (searchQuery) {
     query = query.eq("search_query", searchQuery);
+  }
+
+  if (fitCategory) {
+    query = query.eq("fit_category", fitCategory);
   }
 
   if (promptVersion) {

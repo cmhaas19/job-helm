@@ -401,7 +401,7 @@ export default function SearchesPage() {
           {runStatus !== "running" && (
             <div className="flex justify-end mt-2">
               {runStatus === "completed" ? (
-                <Button onClick={() => { closeProgress(); router.push("/dashboard"); }}>
+                <Button onClick={() => { closeProgress(); router.push("/dashboard/jobs"); }}>
                   View Jobs
                 </Button>
               ) : (

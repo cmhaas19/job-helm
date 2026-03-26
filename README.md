@@ -2,6 +2,16 @@
 
 AI-powered job fit evaluation platform. Define LinkedIn job searches, scrape results on a daily schedule or on-demand, and let Claude score each job against your resume with a weighted rubric. Rate results to calibrate future evaluations.
 
+## Screenshots
+
+| Home | Jobs |
+|------|------|
+| ![Home](docs/screenshots/home.png) | ![Jobs](docs/screenshots/jobs.png) |
+
+| Searches | Run Logs |
+|----------|----------|
+| ![Searches](docs/screenshots/searches.png) | ![Run Logs](docs/screenshots/run-logs.png) |
+
 ## How It Works
 
 1. **Upload your resume** (.md or .txt) so the AI evaluator has context about your background.

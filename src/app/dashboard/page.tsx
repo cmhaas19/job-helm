@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { JobDetailPanel } from "@/components/job-detail-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -76,6 +77,7 @@ function timeAgo(dateStr: string) {
 export default function DashboardHomePage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [detailJobId, setDetailJobId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     const res = await fetch("/api/dashboard");
@@ -258,19 +260,20 @@ export default function DashboardHomePage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {data.topJobs.map((job) => (
-                  <tr key={job.id} className="hover:bg-muted/30">
+                  <tr
+                    key={job.id}
+                    className="hover:bg-muted/30 cursor-pointer"
+                    onClick={() => setDetailJobId(job.id)}
+                  >
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
                         {job.total_score !== null ? Math.round(job.total_score) : "—"}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/dashboard/jobs?search=${encodeURIComponent(job.position)}`}
-                        className="text-sm font-medium hover:text-primary"
-                      >
+                      <span className="text-sm font-medium">
                         {job.position}
-                      </Link>
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -318,6 +321,11 @@ export default function DashboardHomePage() {
           </Card>
         )}
       </div>
+
+      <JobDetailPanel
+        jobId={detailJobId}
+        onClose={() => setDetailJobId(null)}
+      />
     </div>
   );
 }

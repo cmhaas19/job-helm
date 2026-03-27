@@ -54,6 +54,7 @@ export default function DashboardHomePage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailJobId, setDetailJobId] = useState<string | null>(null);
+  const [, setTick] = useState(0);
 
   const loadData = useCallback(async () => {
     const res = await fetch("/api/dashboard");
@@ -66,6 +67,12 @@ export default function DashboardHomePage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Re-render every 60s to keep relative timestamps current
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (loading) {
     return (
